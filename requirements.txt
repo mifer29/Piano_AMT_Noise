@@ -1,0 +1,42 @@
+# Piano_AMT_Noise: Python dependencies
+# Python 3.10+ recommended.
+
+# Pinned versions are those verified in the development environment;
+# unpinned packages can use a recent compatible release.
+
+# Core / deep learning 
+torch==2.6.0
+transformers==4.51.3  # Adafactor optimizer (debug/overfit_batch.py)
+
+# Numerics / data
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.15.2
+h5py==3.11.0
+
+# Audio / MIDI
+librosa
+soundfile
+pretty_midi==0.2.11
+pyroomacoustics              # room-reverb simulation (noise augmentation + test set)
+
+# Evaluation
+mir_eval
+partitura                    # MIDI parsing for evaluation
+# mpteval                    # multi-pitch eval; install from source if not on PyPI
+
+# Inference backend (server/)
+fastapi
+uvicorn[standard]
+python-multipart             # required by FastAPI for file uploads (UploadFile)
+
+# Visualization / video
+opencv-python==4.11.0.86
+matplotlib==3.8.4            # EDA figures (data/eda_figures.py)
+
+# Utilities 
+tqdm==4.66.4
+python-dotenv==0.21.0
+
+# NOTE: ffmpeg, ffprobe and fluidsynth are system binaries (not pip
+# packages): install them via your OS package manager. See the README.

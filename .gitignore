@@ -1,0 +1,17 @@
+.env
+launch_process.py
+Scheduler.py
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+.claude
+M11.pt
+
+Yamaha_C5_Grand-v2.4.sf2
+
+# macOS
+**/.DS_Store
