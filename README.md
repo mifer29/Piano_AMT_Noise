@@ -5,16 +5,38 @@
 Bachelor's Thesis (TFG)
 Data Science and Engineering, Universidad Carlos III de Madrid (UC3M).
 Author: Miguel Fernández Lara.
+Tutor: Dr. Víctor P. Gil Jiménez.
+Madrid, June 2026.
+
+---
+
+## Abstract
+
+This thesis presents the development and implementation of an end-to-end Automatic Music Transcription (AMT) system for polyphonic piano recordings captured under noisy conditions, where existing models tend to degrade. The proposed approach is a sequence-to-sequence Transformer with a convolutional front-end for feature extraction, which maps mel-spectrogram inputs to a token vocabulary encoding note onsets, offsets, and velocities. To address the gap between clean audio and realistic recording conditions, the model is trained to be robust to acoustic degradation through an augmentation pipeline that simulates mobile recording conditions, including room reverberation, environmental noise from the MUSAN dataset, and signal-processing effects. 
+
+The system is trained on the MAESTRO dataset and evaluated on clean audio and a range of acoustic degradation conditions: varying levels of background and speech noise, reverberant environments, and simulated phone recordings. The noise-robust model substantially improves transcription quality under the degraded conditions compared to the same model trained without augmentation, while preserving transcription quality on clean audio.
+    
+Furthermore, the work includes the deployment of a client-server mobile application that allows users to record a piano performance from their phone and automatically receive a MIDI transcription and a Synthesia-style piano roll video. Together, the augmentation methodology, the sequence-to-sequence token formulation, and the deployment of the mobile system demonstrate that piano AMT models can be made robust to realistic acoustic degradation while remaining practical for end-user deployment.
+
+**Keywords:** Automatic Music Transcription · Polyphonic Piano Transcription · Noise
+Robustness · Deep Learning · Transformers · Convolutional Neural Networks · Sequence-to-Sequence Models · Data Augmentation · MAESTRO · MUSAN · Mobile Application
 
 ---
 
 ## Overview
 
-The system proposed transcribes polyphonic piano audio into MIDI using a sequence-to-sequence
+This repository contains the code for the piano AMT system proposed in the thesis, which transcribes polyphonic piano audio into MIDI using a sequence-to-sequence
 Transformer with a convolutional front-end. The input to the encoder are log-mel spectrograms and the decoder autoregressively emits a stream of MIDI-like event tokens (time / velocity / note-on / note-off).
 
 The central research contribution is **demonstrated robustness under simulated acoustic
 degradation**. The model is trained on MAESTRO with on-the-fly noise augmentation (drawn from the MUSAN corpus and simulated room/phone effects) and is evaluated across multiple controlled acoustic conditions. A FastAPI backend and an Android app (Jetpack Compose) wrap the trained model into a usable end-to-end transcription tool.
+
+> **Headline result.** Averaged across the eight degraded test conditions, noise-augmented
+> training (M11) raises onset F1 from **76.4 % to 87.4 %** over the same architecture trained on
+> clean audio (M9): a **+11.0-point** gain, widening to **+16.0 points** on the strictest
+> onset + offset + velocity metric, while preserving clean-audio accuracy (97.1 %). The gains
+> are largest under speech interference and severe noise (up to ~+30 points). See
+> [Results](#results).
 
 ### Model variants
 
@@ -25,6 +47,29 @@ Three variants are compared in the experiments chapter:
 | **M1**  | Baseline, no CNN front-end | Clean |
 | **M9**  | Full architecture (CNN front-end + Transformer) | Clean |
 | **M11** | Full architecture | Noise-augmented |
+
+---
+
+## Results
+
+Onset **F1 (%)** on the held-out MAESTRO test set, across the nine evaluation conditions
+(full metrics: onset/offset/velocity, plus `mpteval` in [results/](results/)):
+
+| Condition | M1 (baseline) | M9 (clean) | **M11 (noise-aug)** |
+|-----------|:---:|:---:|:---:|
+| `clean` | 96.4 | 96.8 | **97.1** |
+| `noise_20db` | 90.8 | 89.8 | **95.2** |
+| `noise_10db` | 76.4 | 76.5 | **91.0** |
+| `noise_5db` | 55.8 | 61.5 | **87.4** |
+| `speech_15db` | 62.4 | 63.8 | **93.0** |
+| `phone_eq` | 73.7 | 93.0 | **94.2** |
+| `reverb_small` | 93.0 | 88.9 | 83.7 |
+| `reverb_large` | 59.5 | 67.8 | **73.7** |
+| `phone_simulation` | 53.6 | 69.8 | **80.6** |
+
+Noise augmentation (M11) improves robustness across every degraded condition and is most
+decisive where the baseline collapses: `noise_5db` (+31.6), `speech_15db` (+30.6),
+`phone_simulation` (+27.0), while leaving clean-audio accuracy essentially unchanged. The one regression is `reverb_small`, where the clean-trained models score higher; this in-distribution reverberation case is discussed in the experiments chapter.
 
 ---
 
@@ -58,52 +103,7 @@ vocabulary:
 ### Audio front-end parameters
 
 `SAMPLE_RATE=16000`, `HOP_LENGTH=128`, `N_MELS=512`, `n_fft=2048`. Inference operates on
-512-frame windows with **25 % overlap** (`STRIDE=384`); boundary duplicates are merged by a
-post-hoc deduplication step (overlap-skip), so the deployed pipeline matches the one that
-produced the reported metrics.
-
----
-
-## Repository layout
-
-```
-.
-├── aux/                    Data preparation pipeline
-│   ├── preprocess_maestro.py        MIDI → note-event arrays (sustain extension, overlap fix)
-│   ├── build_hdf5.py                Pack mels + events into HDF5
-│   ├── build_testnoise.py           Build the deterministic 9-condition noisy test set
-│   ├── build_testnoise.py / build_hdf5_testnoise.py
-│   ├── precompute_mels_testnoise.py
-│   └── preprocess_testnoise.py
-│
-├── baseline_model/         M1 — baseline (no CNN front-end): model.py, train.py, dataset
-├── clean_model/            M9 — full architecture, clean-trained
-├── noise_robust_model/     M11 — full architecture, noise-augmented training
-│   └── (each: model.py, train.py, maestro_dataset.py)
-│
-├── data/                   EDA figures for the thesis (eda_figures.py)
-├── debug/                  Diagnostic scripts (token imbalance, mel/noise checks, overfit-batch)
-│
-├── evaluation/
-│   ├── evaluate.py                  Clean MAESTRO test-set eval (mir_eval + mpteval)
-│   ├── evaluate_testnoise.py        Eval across the 9 noisy conditions
-│   └── transcribe.py                Standalone WAV → MIDI CLI
-│
-├── results/                Saved metrics
-│   ├── ablation/                    M1–M11 ablation runs
-│   ├── clean_test_eval/             Clean test metrics
-│   └── noise_test_eval/             Per-condition noisy test metrics (M1/M9/M11)
-│
-├── server/                 FastAPI inference backend
-│   ├── server.py                    API, startup checks, overlap-skip inference
-│   ├── config.py                    Paths, audio + video config, request limits
-│   ├── audio.py                     Mel, token→note conversion, deduplication
-│   ├── midi_utils.py                Notes → MIDI, tempo estimation
-│   ├── video.py                     Piano-roll video rendering (OpenCV + FluidSynth)
-│   └── vocab.py                     Token vocabulary (must match training)
-│
-└── app/                    Android app (Kotlin / Jetpack Compose, es.uc3m.android.pianotranscriber)
-```
+512-frame windows with **25 % overlap** (`STRIDE=384`); boundary duplicates are merged by a post-hoc deduplication step (overlap-skip), so the deployed pipeline matches the one that produced the reported metrics.
 
 ---
 
@@ -124,137 +124,38 @@ Built deterministically (seed 42) in [aux/build_testnoise.py](aux/build_testnois
 | `phone_simulation` | Phone EQ → small-room reverb → noise @ 15 dB chain |
 
 Training augmentation includes room reverb (pyroomacoustics), a 100 Hz Butterworth
-high-pass, MUSAN background/speech mixing (SNR 15–35 dB), and AAC codec compression. It does
-**not** include distance low-pass filtering or AGC. Robustness claims are scoped to
+high-pass, MUSAN background/speech mixing (SNR 15–35 dB), and AAC codec compression. Robustness claims are scoped to
 *simulated acoustic degradation*, not real-world phone recordings.
 
 ---
 
-## Setup
+## Documentation
 
-### Requirements
+Install steps, commands, and the file tree live in [`docs/`](docs/) to keep this README focused
+on the research:
 
-- **Python 3.10+**
-- Python packages — see [requirements.txt](requirements.txt) (PyTorch, librosa, soundfile,
-  pretty_midi, h5py, pandas, numpy, scipy, pyroomacoustics, mir_eval, partitura, FastAPI,
-  Uvicorn, OpenCV, matplotlib, …)
-- System binaries on `PATH`: `ffmpeg`, `ffprobe`, and `fluidsynth` (for piano-roll video
-  audio; the server degrades to silent video if missing)
-- A General MIDI soundfont (the project uses a Yamaha C5 Grand)
-
-### Create a virtual environment
-
-```bash
-# From the repository rootuse,  Python 3.10+.
-# The pinned versions require Python >= 3.10; the system Python 3.9 will fail with "No matching distribution".
-python3.11 -m venv .venv
-
-# Activate it
-source .venv/bin/activate # macOS / Linux
-# .venv\Scripts\activate  # Windows (PowerShell)
-
-# Upgrade pip and install dependencies
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-> The full install (PyTorch included) needs **~3 GB** of free disk space.
-
-> `mpteval` (multi-pitch evaluation) may not be on PyPI — if `pip install` skips it,
-> install it from source. It is only needed for [evaluation/](evaluation/).
-
-Install the system binaries separately (they are not pip packages):
-
-```bash
-# macOS (Homebrew)
-brew install ffmpeg fluid-synth
-
-# Debian / Ubuntu
-sudo apt-get install ffmpeg fluidsynth
-```
-
-Deactivate the environment with `deactivate` when finished.
-
-### Environment variables (`.env`)
-
-```dotenv
-# Data preprocessing
-maestro_root=/path/to/maestro-v3.0.0
-events_dir=/path/to/note_events
-mel_dir=/path/to/mels
-split=train|validation|test
-output_path=/path/to/output
-hdf5_path=/path/to/dataset.h5
-
-# Inference / server
-model_path=/path/to/checkpoint.pt
-soundfont_path=/path/to/YamahaC5Grand.sf2
-```
+- **[Setup](docs/SETUP.md)**: Requirements, virtual environment, system binaries, and `.env`.
+- **[Usage](docs/USAGE.md)**: Data preparation, training (with the HPC / hardware notes),
+  evaluation, single-file transcription, the inference server, and the Android app.
+- **[Repository layout](docs/STRUCTURE.md)**: Annotated file tree.
 
 ---
 
-## Usage
+## Limitations
 
-### 1. Data preparation
+Scoped honestly, per the thesis (Chapter 9):
 
-```bash
-python aux/preprocess_maestro.py        # MIDI to note-event arrays
-python aux/build_hdf5.py                # pack mels + events into HDF5
-python aux/build_testnoise.py           # build the conditions noisy test set
-python aux/build_hdf5_testnoise.py      # pack the noisy test set
-```
-
-### 2. Training
-
-Each variant has its own `train.py`. Example (M11, noise-robust):
-
-```bash
-python noise_robust_model/train.py \
-    --hdf5_train  /path/to/train.h5 \
-    --hdf5_val    /path/to/val.h5 \
-    --output_root runs/ \
-    --batch_size  256 \
-    --total_steps 600000
-```
-
-Runs are written to a timestamped folder with checkpoints, `train.log`, and `metrics.pt`.
-Use `--resume_run <dir>` to continue.
-
-### 3. Evaluation
-
-```bash
-# Clean MAESTRO test set
-python evaluation/evaluate.py
-
-# Across the noisy conditions
-python evaluation/evaluate_testnoise.py
-```
-
-Metrics are computed with `mir_eval` (onset/offset/velocity F1) and `mpteval`, and saved
-under [results/](results/).
-
-### 4. Single-file transcription
-
-```bash
-python evaluation/transcribe.py  input.wav  output.mid
-```
-
-### 5. Inference server
-
-```bash
-cd server
-uvicorn server:app --host 0.0.0.0 --port 8000
-```
-
-The server runs startup checks (binaries, checkpoint, soundfont), then accepts audio
-uploads (≤ 300 MB, ≤ 300 s), runs overlap-skip windowed inference, and returns MIDI plus an
-optional piano-roll video. Designed to run on a laptop CPU.
-
-### 6. Android app
-
-Open [app/](app/) in Android Studio and build the
-`es.uc3m.android.pianotranscriber` module. The app records or selects audio, uploads it to
-the backend, and renders the returned transcription as a piano roll.
+- **Reverberation is the primary failure mode.** Onsets stay detectable, but offsets blur
+  under room reflections: large-room O+Off F1 falls to ~43 %. Offset and velocity prediction degrade faster than onset detection across every condition.
+- **Simulated, not real-world, degradation.** Robustness is measured on MUSAN-augmented
+  MAESTRO with paired ground truth. Real phone recordings have no ground-truth MIDI, so no
+  quantitative real-world claim is made; the sim-to-real gap is an open problem.
+- **Piano only.** The vocabulary, 88-pitch range, and tokenization are piano-specific, and
+  training uses only Yamaha Disklavier grand-piano timbres (MAESTRO). Other instruments,
+  non-classical genres, and upright/digital pianos are out of scope.
+- **Moderate musical expressiveness.** Note-level accuracy is strong, but dynamics (0.56 vs. 0.64 for the T5 reference) are weaker: plausibly a cost of noise-augmented training.
+- **Server-side inference.** The 52.2 M-parameter model runs on a laptop CPU; on-device
+  deployment would require quantization/distillation and is left as future work.
 
 ---
 
@@ -266,6 +167,14 @@ the backend, and renders the returned transcription as a piano roll.
 - **Overlap-skip by construction.** Duplicate boundary notes are handled by the inference
   design, not patched after the fact.
 - Velocity is quantized to 128 bins; time resolution is 10 ms.
+
+---
+
+## License
+
+- **Thesis text and figures:** Creative Commons Attribution–NonCommercial–NoDerivatives 4.0 International (**CC BY-NC-ND 4.0**).
+- **Code in this repository:** **MIT** (see [LICENSE](LICENSE)). The permissive code license does not override the dataset terms below — trained weights and any redistributed data inherit them.
+- **Datasets (not redistributed here):** MAESTRO v3.0.0 is **CC BY-NC-SA 4.0** and MUSAN is **CC BY 4.0** — both non-/share-alike terms carry over to models trained on them, so any commercial use would require separate clearance.
 
 ---
 
