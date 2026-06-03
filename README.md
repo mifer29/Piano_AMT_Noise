@@ -1,6 +1,4 @@
-# Piano_AMT_Noise
-
-## **Transformer-based Automatic Music Transcription for Piano with Noise Robustness and Mobile Deployment.**
+# **Transformer-based Automatic Music Transcription for Piano with Noise Robustness and Mobile Deployment.**
 
 Bachelor's Thesis (TFG)<br>
 Data Science and Engineering, Universidad Carlos III de Madrid (UC3M).<br>
@@ -45,6 +43,9 @@ An ablation is performed evaluating performance of 11 different models. Three se
 | **M1**  | Baseline, no CNN front-end | Clean |
 | **M9**  | Full architecture (CNN front-end + Transformer) | Clean |
 | **M11** | Full architecture | Noise-augmented |
+
+The trained checkpoints for these three variants (M1, M9, M11) are available on Zenodo:
+[doi.org/10.5281/zenodo.20473425](https://doi.org/10.5281/zenodo.20473425).
 
 ---
 
@@ -190,20 +191,10 @@ Scoped honestly, per the thesis (Chapter 9):
 - **Piano only.** The vocabulary, 88-pitch range, and tokenization are piano-specific, and
   training uses only Yamaha Disklavier grand-piano timbres (MAESTRO). Other instruments,
   non-classical genres, and upright/digital pianos are out of scope.
-- **Moderate musical expressiveness.** Note-level accuracy is strong, but dynamics (0.56 vs. 0.64 for the T5 reference) are weaker: plausibly a cost of noise-augmented training.
+- **Moderate musical expressiveness.** Note-level accuracy is strong, but dynamics are weaker: plausibly a cost of noise-augmented training.
 - **Server-side inference.** The 52.2 M-parameter model runs on a laptop CPU; on-device
   deployment would require quantization/distillation and is left as future work.
 
----
-
-## Notes & scope
-
-- **Sim-to-real gap is documented.** The model generalizes across piano timbres
-  and recording conditions *within a defined operating envelope*; home-phone-recording
-  limitations are a stated scope boundary.
-- **Overlap-skip by construction.** Duplicate boundary notes are handled by the inference
-  design, not patched after the fact.
-- Velocity is quantized to 128 bins; time resolution is 10 ms.
 
 ---
 
