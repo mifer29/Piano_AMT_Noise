@@ -55,7 +55,7 @@ def _gn(num_channels: int) -> nn.GroupNorm:
 #
 # Two freq-stride-2 blocks reduce the frequency dimension by 4x before
 # the final linear projection, keeping the projection input small:
-#   n_mels=512 → 128 * (512//4) = 128 * 128 = 16384  (manageable)
+#   n_mels=512 -> 128 * (512//4) = 128 * 128 = 16384  (manageable)
 #
 # 1x1 conv shortcuts handle channel/spatial mismatches — no zero-padding.
 
@@ -63,14 +63,14 @@ class CNNFrontend(nn.Module):
     def __init__(self, n_mels: int, d_model: int):
         super().__init__()
 
-        # Stem: 1 → 32, no spatial change
+        # Stem: 1 -> 32, no spatial change
         self.stem = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, padding=1, bias=False),
             _gn(32),
             nn.ReLU(),
         )
 
-        # Block 1: 32 → 32, freq /2
+        # Block 1: 32 -> 32, freq /2
         self.block1_main = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1, bias=False),
             _gn(32), nn.ReLU(),
@@ -82,7 +82,7 @@ class CNNFrontend(nn.Module):
             _gn(32),
         )
 
-        # Block 2: 32 → 64, freq /2
+        # Block 2: 32 -> 64, freq /2
         self.block2_main = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3, padding=1, bias=False),
             _gn(64), nn.ReLU(),
@@ -94,7 +94,7 @@ class CNNFrontend(nn.Module):
             _gn(64),
         )
 
-        # Block 3: 64 → 128, no stride
+        # Block 3: 64 -> 128, no stride
         self.block3_main = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=3, padding=1, bias=False),
             _gn(128), nn.ReLU(),

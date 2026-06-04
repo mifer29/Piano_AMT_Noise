@@ -1,8 +1,5 @@
 """
 MAESTRO Dataset: Thesis EDA Figures
-
-Generates figures for the LaTeX thesis (Times New Roman,
-booktabs style, PDF vector output).
 """
 
 import os
@@ -14,20 +11,23 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
 import pretty_midi
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 warnings.filterwarnings("ignore")
 
 # CONFIG 
-MAESTRO_DIR    = "/export/clusterdata/mflara/maestro"   
+MAESTRO_DIR    = os.getenv("maestro_dir")   
 CSV_NAME       = "maestro-v3.0.0.csv"
 OUTPUT_DIR     = "eda_figures"
 MAX_MIDI_FILES = 200   # set None to analyse all files
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# ── MATPLOTLIB GLOBAL STYLE  (LaTeX + Times New Roman) ───────────────────────
+
 mpl.rcParams.update({
-    # Use LaTeX rendering so all text matches your thesis font
+    
     "text.usetex":          True,
     "text.latex.preamble":  r"\usepackage{times}\usepackage{amsmath}",
     "font.family":          "serif",
@@ -65,7 +65,7 @@ mpl.rcParams.update({
     "patch.linewidth":      0.5,
 })
 
-# Colour palette — muted, greyscale-friendly, print-safe
+# Colour palette
 SPLIT_COLORS = {
     "train":      "#2166AC",
     "validation": "#F4A582",
@@ -74,14 +74,14 @@ SPLIT_COLORS = {
 MAIN_COLOR = "#2166AC"
 ACCENT     = "#D6604D"
 
-# ── HELPERS ───────────────────────────────────────────────────────────────────
+# HELPERS 
 def save(fig, name):
     path = os.path.join(OUTPUT_DIR, name)
     fig.savefig(path)
     plt.close(fig)
     print(f"  [ok] {name}")
 
-# ── 1. LOAD METADATA ──────────────────────────────────────────────────────────
+# 1. LOAD METADATA 
 csv_path = os.path.join(MAESTRO_DIR, CSV_NAME)
 df = pd.read_csv(csv_path)
 df["split"] = df["split"].str.strip().str.lower()
@@ -90,8 +90,8 @@ print("=" * 60)
 print("MAESTRO EDA")
 print("=" * 60)
 
-# ── 2. FIGURE 1 — Duration distribution ──────────────────────────────────────
-# figsize width ≈ \textwidth for a standard A4 single-column thesis
+# 2. FIGURE 1: Duration distribution 
+
 fig, axes = plt.subplots(1, 2, figsize=(5.5, 2.6))
 dur_min = df["duration"] / 60
 
@@ -118,7 +118,7 @@ ax.legend(frameon=False)
 fig.tight_layout(pad=0.8)
 save(fig, "duration_distribution.pdf")
 
-# ── 3. FIGURE 2 — Composer duration ──────────────────────────────────────────
+# 3. FIGURE 2: Composer duration 
 composer_h = (df.groupby("canonical_composer")["duration"]
                .sum()
                .sort_values(ascending=False)
@@ -145,7 +145,7 @@ for bar, val in zip(bars, vals):
 fig.tight_layout(pad=0.8)
 save(fig, "composer_duration.pdf")
 
-# ── 4. MIDI PARSING ───────────────────────────────────────────────────────────
+# 4. MIDI PARSING
 print(f"\n  Parsing MIDI files (up to {MAX_MIDI_FILES})...")
 
 midi_files = df["midi_filename"].tolist()
@@ -186,7 +186,7 @@ for fname in midi_files:
 
 print(f"  Parsed {len(note_counts)} MIDI files successfully.")
 
-# ── 5. FIGURE 3 — MIDI statistics (6-panel) ──────────────────────────────────
+# 5. FIGURE 3: MIDI statistics (4-panel)
 fig = plt.figure(figsize=(7.0, 5.0))
 gs  = gridspec.GridSpec(2, 2, figure=fig, hspace=0.68, wspace=0.44)
 
@@ -215,7 +215,7 @@ for idx, (data, title, xlabel) in enumerate(panels):
 
 save(fig, "midi_statistics.pdf")
 
-# ── 6. FIGURE 4 — Pitch usage ─────────────────────────────────────────────────
+# 6. FIGURE 4: Pitch usage
 fig, ax = plt.subplots(figsize=(5.5, 2.4))
 
 ax.bar(range(128), pitch_counts, width=1.0,
@@ -245,7 +245,7 @@ ax.legend(frameon=False, loc="upper center",
 fig.tight_layout(pad=0.8)
 save(fig, "pitch_usage.pdf")
 
-# ── 7. FIGURE 5 — Temporal split distribution ─────────────────────────────────
+# 7. FIGURE 5: Temporal split distribution
 df["year"] = df["audio_filename"].str.extract(r"(\d{4})/").astype(int)
 
 years  = sorted(df["year"].unique())
@@ -272,7 +272,7 @@ ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(1.01, 1),
 fig.tight_layout(pad=0.8)
 save(fig, "temporal_split.pdf")
 
-# ── SUMMARY ───────────────────────────────────────────────────────────────────
+# SUMMARY
 print(f"\nSummary statistics:")
 print(f"  Total recordings   : {len(df)}")
 print(f"  Total duration     : {df['duration'].sum()/3600:.2f} h")

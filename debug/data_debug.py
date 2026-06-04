@@ -1,3 +1,7 @@
+'''
+Sanity-checks one dataset sample: validates the target token sequence structure, the
+alignment between mel segment duration and event time bins, and the model's loss/logits at init.
+'''
 import math
 import numpy as np
 import torch
@@ -7,14 +11,17 @@ from pathlib import Path
 from maestro_dataset import MAESTROSeq2SeqDataset, collate_fn
 from model import AudioTransformer, shift_tokens_right
 from torch.utils.data import DataLoader
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-# ==========================================================
+
 # CONFIG
-# ==========================================================
 
-maestro_root = "/export/clusterdata/mflara/maestro"
-events_dir   = "/export/clusterdata/mflara/maestro/preprocessed_events"
-mel_dir      = "/export/clusterdata/mflara/maestro/preprocessed_mels"
+
+maestro_root = os.getenv("maestro_root")
+events_dir   = os.getenv("events_dir")
+mel_dir      = os.getenv("mel_dir")
 
 TEST_TOKENS     = True
 TEST_ALIGNMENT  = True
@@ -22,9 +29,9 @@ TEST_MODEL_INIT = True
 
 random.seed(42)
 
-# ==========================================================
+
 # Create dataset + grab one sample
-# ==========================================================
+
 
 dataset = MAESTROSeq2SeqDataset(
     maestro_path=maestro_root,
@@ -44,9 +51,9 @@ audio_features = sample["audio_features"]
 target_ids     = sample["target_ids"]
 
 
-# ==========================================================
+
 # TEST 1: Token sequence check
-# ==========================================================
+
 
 def test_tokens():
     print("\n" + "=" * 50)
@@ -85,9 +92,9 @@ def test_tokens():
         print(f"  FAIL {errors} structural issues found.")
 
 
-# ==========================================================
+
 # TEST 2: Mel-event alignment check
-# ==========================================================
+
 
 def test_alignment():
     print("\n" + "=" * 50)
@@ -130,9 +137,9 @@ def test_alignment():
         print("OK  Events contained within mel segment.")
 
 
-# ==========================================================
+
 # TEST 3: Model output distribution at init
-# ==========================================================
+
 
 def test_model_init():
     print("\n" + "=" * 50)
@@ -192,9 +199,8 @@ def test_model_init():
         print("\nWARN Loss is somewhat above expected. Monitor closely.")
 
 
-# ==========================================================
 # RUN TESTS
-# ==========================================================
+
 
 if TEST_TOKENS:
     test_tokens()

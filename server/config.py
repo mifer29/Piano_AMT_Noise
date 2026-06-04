@@ -21,20 +21,20 @@ MAX_OUTPUT_TOKENS = 512
 OVERLAP_RATIO     = 0.25
 STRIDE            = max(1, int(MAX_INPUT_FRAMES * (1 - OVERLAP_RATIO)))   # = 384
 
-# ── Request limits ──────────────────────────────────────────────────────────
+# Request limits 
 MAX_UPLOAD_BYTES   = 300 * 1024 * 1024   # 300 MB
 MAX_AUDIO_SECONDS  = 300.0               # reject anything longer
 
-# ── Subprocess timeouts (seconds) ───────────────────────────────────────────
+# Subprocess timeouts (seconds)
 FLUIDSYNTH_TIMEOUT = 300
 FFMPEG_TIMEOUT     = 300
 FFPROBE_TIMEOUT    = 100
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# ─────────────────────────────────────────────
+
+
 # Video config
-# ─────────────────────────────────────────────
 FPS        = 30
 WIDTH      = 1280
 HEIGHT     = 720

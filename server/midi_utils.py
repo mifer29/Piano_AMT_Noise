@@ -5,9 +5,9 @@ import pretty_midi
 log = logging.getLogger("transcribe")
 
 
-# ─────────────────────────────────────────────
-# Notes → MIDI
-# ─────────────────────────────────────────────
+
+# Notes to MIDI
+
 def notes_to_midi(notes, path):
     pm   = pretty_midi.PrettyMIDI()
     inst = pretty_midi.Instrument(program=0)

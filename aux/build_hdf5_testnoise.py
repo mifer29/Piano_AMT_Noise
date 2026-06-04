@@ -1,21 +1,21 @@
 '''
-Builds a single HDF5 test file from the pre-generated mel spectrograms produced by precompute_test_mels.py
+Builds a single HDF5 test file from the pre-generated mel spectrograms produced by precompute_mels_testnoise.py
 
 The output HDF5 contains one mel dataset per condition, all sharing the same event annotations and length arrays:
 
-  mel_clean              (total_frames, n_mels)  float16
-  mel_noise_20db         (total_frames, n_mels)  float16
-  mel_noise_10db         (total_frames, n_mels)  float16
-  mel_noise_5db          (total_frames, n_mels)  float16
-  mel_speech_15db        (total_frames, n_mels)  float16
-  mel_reverb             (total_frames, n_mels)  float16
-  mel_phone_eq           (total_frames, n_mels)  float16
-  mel_phone_simulation   (total_frames, n_mels)  float16
-  events                 (total_events, 4)        float32
-  mel_lengths            (n_pieces,)              int64
-  event_lengths          (n_pieces,)              int64
+  mel_clean -> (total_frames, n_mels)  float16
+  mel_noise_20db -> (total_frames, n_mels)  float16
+  mel_noise_10db -> (total_frames, n_mels)  float16
+  mel_noise_5db -> (total_frames, n_mels)  float16
+  mel_speech_15db -> (total_frames, n_mels)  float16
+  mel_reverb -> (total_frames, n_mels)  float16
+  mel_phone_eq -> (total_frames, n_mels)  float16
+  mel_phone_simulation -> (total_frames, n_mels)  float16
+  events -> (total_events, 4)  float32
+  mel_lengths -> (n_pieces,)    int64
+  event_lengths ->(n_pieces,)   int64
 
-Song order is fixed by manifest.csv (produced by build_test_set.py), which guarantees reproducibility across machines
+Song order is fixed by manifest.csv (produced by build_testnoise.py), which guarantees reproducibility across machines
 '''
 
 
@@ -26,7 +26,7 @@ import pandas as pd
 from pathlib import Path
 
 
-# Conditions must match the subfolder names written by precompute_test_mels.py
+# Conditions must match the subfolder names written by precompute_mels_testnoise.py
 CONDITIONS = [
     "clean",
     "noise_20db",
@@ -52,10 +52,8 @@ def build_test_hdf5(
     test_mels_dir = Path(test_mels_dir)
     manifest_path = Path(manifest_path)
 
-    # Load manifest: this defines song order, which must be stable
-    # manifest.csv was written by build_test_set.py and contains exactly
-    # the songs that were degraded.  Using it as the source of truth means
-    # song order is identical to the WAV and mel files on disk.
+    # Load manifest: this defines song order, which must be stable manifest.csv was written by build_testnoise.py and contains exactly
+    # the songs that were degraded.  Using it as the source of truth means song order is identical to the WAV and mel files on disk.
 
     if not manifest_path.exists():
         raise FileNotFoundError(f"Manifest not found: {manifest_path}")
@@ -84,7 +82,7 @@ def build_test_hdf5(
         midi_stem = Path(row["midi_filename"]).stem
         audio_stem = Path(row["audio_filename"]).stem
 
-        # All conditions share the same mel shape — use clean as reference
+        # All conditions share the same mel shape, use clean as reference
         mel_path = test_mels_dir / "clean" / f"{audio_stem}.npy"
         if not mel_path.exists():
             raise FileNotFoundError(
@@ -144,7 +142,7 @@ def build_test_hdf5(
             )
             print(f"  Created dataset: {ds_name}  shape=({total_mel_frames}, {mel_dim})")
 
-        # Shared event dataset — annotations are condition-independent
+        # Shared event dataset, annotations are condition-independent
         event_ds = f.create_dataset(
             "events",
             shape=(total_event_rows, 4),
@@ -152,7 +150,7 @@ def build_test_hdf5(
             chunks=(4096, 4),
         )
 
-        # Length arrays — shared across all conditions
+        # Length arrays, shared across all conditions
         f.create_dataset("mel_lengths",   data=np.array(mel_lengths,   dtype=np.int64))
         f.create_dataset("event_lengths", data=np.array(event_lengths, dtype=np.int64))
 

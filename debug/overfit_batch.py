@@ -1,3 +1,8 @@
+'''
+Overfits the model on a single frozen batch as a sanity check: if loss can be driven
+near zero, the model, loss, and optimizer wiring are correct; otherwise something is broken.
+'''
+
 import os
 import sys
 import math

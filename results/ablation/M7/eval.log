@@ -2,7 +2,7 @@
 [13:17:54] Checkpoint:  M7
 [13:17:54] Val HDF5:    maestro_validation.h5
 [13:17:55] MIDI dir:    not provided — using HDF5 events
-[13:17:55] Output dir:  /export/clusterdata/mflara/TFG_cluster/results
+[13:17:55] Output dir:  results
 [13:17:55] Num samples: 137
 [13:17:55] Device: cuda
 [13:17:55] GPU: NVIDIA GeForce RTX 4090, VRAM: 25.3GB

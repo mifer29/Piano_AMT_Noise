@@ -363,7 +363,7 @@ def main(args):
         for cond_idx, cond in enumerate(CONDITIONS):
 
             # Independent RNG per (song, condition):
-            #   seed + row_idx * 1000 + cond_idx
+            # seed + row_idx * 1000 + cond_idx
             # Adding or removing a condition never changes any other combination.
             rng = np.random.RandomState(args.seed + row_idx * 1000 + cond_idx)
 

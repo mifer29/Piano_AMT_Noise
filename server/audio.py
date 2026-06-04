@@ -8,9 +8,8 @@ from vocab import token_to_id
 log = logging.getLogger("transcribe")
 
 
-# ─────────────────────────────────────────────
-# Audio → mel
-# ─────────────────────────────────────────────
+
+# Audio to mel
 def compute_mel(audio_path):
     audio, _ = librosa.load(audio_path, sr=SAMPLE_RATE, mono=True)
     mel = librosa.feature.melspectrogram(
@@ -27,16 +26,16 @@ def get_audio_duration(audio_path):
         return -1.0
 
 
-# ─────────────────────────────────────────────
-# Tokens → notes
-# ─────────────────────────────────────────────
+
+# Tokens to notes
+
 def tokens_to_notes(token_ids, time_resolution=0.01, segment_duration=None):
     """
     Decode a token sequence into (onset, offset, pitch, velocity) tuples.
 
     Token order (matches training, see maestro_dataset._events_to_tokens):
-        attack:  time → note_on → velocity
-        release: time → note_off
+        attack:  time -> note_on -> velocity
+        release: time -> note_off
 
     Because velocity tokens always *follow* the note_on they apply to, this
     function peeks ahead one position after each note_on rather than
@@ -123,9 +122,8 @@ def tokens_to_notes(token_ids, time_resolution=0.01, segment_duration=None):
     return notes
 
 
-# ─────────────────────────────────────────────
 # Deduplication of overlap artifacts
-# ─────────────────────────────────────────────
+
 def deduplicate_notes(notes, time_tol=0.05):
     """
     Merge duplicated notes caused by overlapping segments.

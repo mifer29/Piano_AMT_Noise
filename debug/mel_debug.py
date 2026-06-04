@@ -1,3 +1,8 @@
+'''
+Validates the mel-spectrogram pipeline by checking that dataset slices match the raw .npy
+files, the on-the-fly librosa recomputation, and the full __getitem__ output within float16 tolerance.
+'''
+
 import numpy as np
 import torch
 import random
@@ -9,9 +14,9 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-# ==========================================================
+
 # CONFIG
-# ==========================================================
+
 
 maestro_root = os.getenv("maestro_root")
 events_dir = os.getenv("events_dir")
@@ -30,9 +35,9 @@ FLOAT16_TOLERANCE = 1e-2  # float16 max rounding error
 
 random.seed(42)
 
-# ==========================================================
+
 # Create dataset
-# ==========================================================
+
 
 dataset = MAESTROSeq2SeqDataset(
     maestro_path=maestro_root,
@@ -54,11 +59,11 @@ start_frame = random.randint(0, max_start_frame)
 print(f"Start frame used: {start_frame}")
 print(f"Mel path: {mel_path}")
 
-# ==========================================================
-# Raw npy sanity check — do this before anything else
-# ==========================================================
 
-print("\n=== RAW NPY SANITY CHECK ===")
+# Raw npy sanity check 
+
+
+print("\n RAW NPY SANITY CHECK ")
 raw = np.load(mel_path, mmap_mode="r")
 print(f"Stored mel dtype:  {raw.dtype}")           # expect float16
 print(f"Stored mel shape:  {raw.shape}")            # expect [n_frames, 512]
@@ -69,16 +74,16 @@ print(f"Has NaN:           {np.isnan(raw).any()}")
 print(f"Has Inf:           {np.isinf(raw).any()}")
 del raw
 
-# ==========================================================
-# Load dataset segment — keep as float32 (what model sees)
-# ==========================================================
+
+# Load dataset segment: keep as float32 (what model sees)
+
 
 # _load_mel_segment returns float32 (upcasted from float16 on disk)
 dataset_segment = torch.from_numpy(
     dataset._load_mel_segment(mel_path, start_frame)
 )  # float32
 
-print("\n=== DATASET SEGMENT INFO (float32, what model sees) ===")
+print("\n DATASET SEGMENT INFO (float32, what model sees) ")
 print(f"Shape: {dataset_segment.shape}")
 print(f"Dtype: {dataset_segment.dtype}")
 print(f"Min:   {dataset_segment.min().item():.4f}")
@@ -88,14 +93,14 @@ print(f"Std:   {dataset_segment.std().item():.4f}")
 print(f"Has NaN: {torch.isnan(dataset_segment).any().item()}")
 
 
-# ==========================================================
+
 # TEST 1: Dataset slice vs raw npy slice
-# ==========================================================
+
 
 def test_dataset_slice():
-    print("\n==============================")
+
     print("TEST 1: DATASET VS RAW SLICE")
-    print("==============================")
+
 
     original_mel = np.load(mel_path)  # float16 on disk
     print(f"Raw npy dtype: {original_mel.dtype}")
@@ -111,7 +116,7 @@ def test_dataset_slice():
         )
         expected_segment = np.vstack([expected_segment, pad])
 
-    # Convert to float32 for comparison — same as what _load_mel_segment does
+    # Convert to float32 for comparison, same as what _load_mel_segment does
     expected_segment = torch.tensor(expected_segment, dtype=torch.float32)
 
     difference = torch.abs(expected_segment - dataset_segment)
@@ -121,19 +126,19 @@ def test_dataset_slice():
     print(f"Exact equality:      {torch.equal(expected_segment, dataset_segment)}")
 
     if difference.max().item() == 0:
-        print("\n✅ Dataset slicing is PERFECT.")
+        print("\n Dataset slicing is PERFECT.")
     else:
-        print("\n❌ Dataset slicing mismatch.")
+        print("\n Dataset slicing mismatch.")
 
 
-# ==========================================================
+
 # TEST 2: Precomputed mel vs on-the-fly mel
-# ==========================================================
+
 
 def test_on_the_fly_mel():
-    print("\n====================================")
+
     print("TEST 2: PRECOMPUTED VS ON-THE-FLY")
-    print("====================================")
+
 
     mel_stem = Path(mel_path).stem.replace("_mel", "")
 
@@ -173,7 +178,7 @@ def test_on_the_fly_mel():
         )
         expected_segment = np.vstack([expected_segment, pad])
 
-    # Keep as float32 — do NOT cast to float16 here
+    # Keep as float32, do NOT cast to float16 here
     # float16 truncation in preprocessing is expected to introduce small errors
     expected_segment = torch.tensor(expected_segment, dtype=torch.float32)
 
@@ -183,21 +188,20 @@ def test_on_the_fly_mel():
     print(f"Mean abs difference: {difference.mean().item():.6f}")
     print(f"Exact equality:      {torch.equal(expected_segment, dataset_segment)}")
 
-    # Not exact due to float16 truncation in preprocessing — use tolerance
+    # Not exact due to float16 truncation in preprocessing, use tolerance
     if difference.mean().item() < FLOAT16_TOLERANCE:
-        print(f"\n✅ Mel pipeline matches within float16 tolerance ({FLOAT16_TOLERANCE}).")
+        print(f"\n Mel pipeline matches within float16 tolerance ({FLOAT16_TOLERANCE}).")
     else:
-        print(f"\n❌ Mel preprocessing mismatch detected (mean diff > {FLOAT16_TOLERANCE}).")
+        print(f"\n Mel preprocessing mismatch detected (mean diff > {FLOAT16_TOLERANCE}).")
 
 
-# ==========================================================
 # TEST 3: Full dataset pipeline (__getitem__)
-# ==========================================================
+
 
 def test_full_pipeline():
-    print("\n====================================")
+
     print("TEST 3: FULL DATASET PIPELINE")
-    print("====================================")
+
 
     # Seed BEFORE dataset[idx] so we can recover the same start_frame after
     random.seed(42)
@@ -212,7 +216,7 @@ def test_full_pipeline():
 
     print(f"Recovered start_frame: {recovered_start_frame}")
 
-    # float32 — what the model actually receives
+    # float32: what the model actually receives
     pipeline_segment = sample["audio_features"]
     print(f"Segment shape: {pipeline_segment.shape}")
     print(f"Segment dtype: {pipeline_segment.dtype}")
@@ -229,16 +233,16 @@ def test_full_pipeline():
     print(f"Exact equality:      {torch.equal(expected, pipeline_segment)}")
 
     if difference.max().item() == 0:
-        print("\n✅ FULL DATA PIPELINE IS PERFECT.")
+        print("\n FULL DATA PIPELINE IS PERFECT.")
     elif difference.mean().item() < FLOAT16_TOLERANCE:
-        print(f"\n✅ Matches within float16 tolerance ({FLOAT16_TOLERANCE}).")
+        print(f"\n Matches within float16 tolerance ({FLOAT16_TOLERANCE}).")
     else:
-        print("\n❌ FULL PIPELINE MISMATCH DETECTED.")
+        print("\n FULL PIPELINE MISMATCH DETECTED.")
 
 
-# ==========================================================
+
 # RUN TESTS
-# ==========================================================
+
 
 if TEST_DATASET_SLICE:
     test_dataset_slice()

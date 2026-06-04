@@ -476,7 +476,7 @@ def evaluate(args):
         ts   = time.strftime("%H:%M:%S")
         line = f"[{ts}] {msg}"
         print(line, flush=True)
-        with open(log_path, "a") as fh:   # 'fh' not 'f' — avoids shadowing HDF5 handle
+        with open(log_path, "a") as fh:   # 'fh' not 'f': avoids shadowing HDF5 handle
             fh.write(line + "\n")
 
     log("AMT NOISE EVALUATION")

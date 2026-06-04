@@ -1,27 +1,8 @@
 """
-debug_musan_noise.py
-
 Apply REALISTIC noise using MUSAN to a clean WAV file.
-
-Usage:
-python noise_debug.py --input /export/clusterdata/mflara/maestro/2014/MIDI-UNPROCESSED_16-18_R1_2014_MID--AUDIO_16_R1_2014_wav--1.wav --musan_dir /export/clusterdata/mflara/musan/musan --output_wav noisy.wav  --output_mel noisy_mel.npy --noisy_versions 3
-"""
-"""
-2
-"""
-"""
-debug_precompute.py
 
 Test the full precompute augmentation pipeline on a single WAV file.
 Saves both the noisy WAV (for listening) and the mel spectrogram (for inspection).
-
-Usage:
-python noise_debug.py \
-  --input /path/to/piano.wav \
-  --musan_dir /path/to/musan \
-  --output_wav noisy.wav \
-  --output_mel noisy_mel.npy \
-  --noisy_versions 3
 """
 
 import argparse
@@ -35,9 +16,9 @@ import soundfile as sf
 from scipy.signal import butter, sosfilt
 
 
-# ─────────────────────────────────────────────
+
 # Constants
-# ─────────────────────────────────────────────
+
 
 SAMPLE_RATE = 16000
 HOP_LENGTH  = 128
@@ -45,9 +26,8 @@ N_FFT       = 1024
 N_MELS      = 512
 
 
-# ─────────────────────────────────────────────
+
 # Load audio
-# ─────────────────────────────────────────────
 
 def load_audio(path):
     wav, sr = librosa.load(path, sr=SAMPLE_RATE, mono=True)
@@ -55,9 +35,8 @@ def load_audio(path):
     return wav
 
 
-# ─────────────────────────────────────────────
+
 # Load MUSAN
-# ─────────────────────────────────────────────
 
 def load_musan(musan_dir):
     noise_files  = glob.glob(os.path.join(musan_dir, "noise",  "**", "*.wav"), recursive=True)
@@ -66,9 +45,8 @@ def load_musan(musan_dir):
     return noise_files, speech_files
 
 
-# ─────────────────────────────────────────────
+
 # SNR mixing
-# ─────────────────────────────────────────────
 
 def mix_snr(clean, noise, snr_db):
     clean_rms = np.sqrt(np.mean(clean ** 2)) + 1e-8
@@ -77,9 +55,8 @@ def mix_snr(clean, noise, snr_db):
     return clean + scale * noise
 
 
-# ─────────────────────────────────────────────
+
 # Piecewise background noise
-# ─────────────────────────────────────────────
 
 def add_background_piecewise(wav, files, sample_rate, snr_range, apply_prob=0.7, label="noise"):
     if not files:
@@ -124,9 +101,8 @@ def add_background_piecewise(wav, files, sample_rate, snr_range, apply_prob=0.7,
     return wav
 
 
-# ─────────────────────────────────────────────
+
 # Phone EQ
-# ─────────────────────────────────────────────
 
 def phone_eq(wav, sample_rate):
     sos = butter(4, 100, btype="high", fs=sample_rate, output="sos")
@@ -135,9 +111,8 @@ def phone_eq(wav, sample_rate):
     return out
 
 
-# ─────────────────────────────────────────────
+
 # Room reverb
-# ─────────────────────────────────────────────
 
 def add_reverb(wav, sample_rate):
     try:
@@ -163,9 +138,8 @@ def add_reverb(wav, sample_rate):
         return wav
 
 
-# ─────────────────────────────────────────────
+
 # Codec compression
-# ─────────────────────────────────────────────
 
 def codec_compress(wav, sample_rate, bitrate="64k"):
     try:
@@ -199,16 +173,15 @@ def codec_compress(wav, sample_rate, bitrate="64k"):
         return decoded
 
     except Exception as e:
-        print(f"  [CODEC] failed ({e}) — skipped")
+        print(f"  [CODEC] failed ({e}), skipped")
         return wav
 
 
-# ─────────────────────────────────────────────
 # Full augmentation pipeline
-# ─────────────────────────────────────────────
+
 
 def augment(wav, noise_files, speech_files, sample_rate, version_id=0):
-    print(f"\n── version {version_id} ───────────────────────────────────────")
+    print(f"\n version {version_id}")
 
     rms = np.sqrt(np.mean(wav ** 2)) + 1e-8
     wav = (wav / rms * 0.1).astype(np.float32)
@@ -245,9 +218,9 @@ def augment(wav, noise_files, speech_files, sample_rate, version_id=0):
     return wav
 
 
-# ─────────────────────────────────────────────
+
 # Mel computation
-# ─────────────────────────────────────────────
+
 
 def to_mel(wav):
     mel = librosa.feature.melspectrogram(
@@ -265,13 +238,13 @@ def main(args):
     noise_files, speech_files = load_musan(args.musan_dir)
 
     wav_stem = os.path.splitext(args.output_wav)[0]
-    mel_stem = os.path.splitext(args.output_mel)[0]  # ← derive mel stem from --output_mel
+    mel_stem = os.path.splitext(args.output_mel)[0]  # derive mel stem from --output_mel
 
     for v in range(args.noisy_versions):
         noisy_wav = augment(wav, noise_files, speech_files, SAMPLE_RATE, version_id=v)
 
         wav_path = f"{wav_stem}_v{v}.wav"
-        mel_path = f"{mel_stem}_v{v}.npy"  # ← use mel_stem
+        mel_path = f"{mel_stem}_v{v}.npy"  # use mel_stem
 
         sf.write(wav_path, noisy_wav, SAMPLE_RATE)
         print(f"  [SAVE] wav → {wav_path}")
@@ -291,7 +264,7 @@ if __name__ == "__main__":
     parser.add_argument("--input",           type=str, required=True)
     parser.add_argument("--musan_dir",       type=str, required=True)
     parser.add_argument("--output_wav",      type=str, default="noisy.wav")
-    parser.add_argument("--output_mel",      type=str, default="noisy_mel.npy")  # ← add this
+    parser.add_argument("--output_mel",      type=str, default="noisy_mel.npy")  
     parser.add_argument("--noisy_versions",  type=int, default=3)
     args = parser.parse_args()
     main(args)

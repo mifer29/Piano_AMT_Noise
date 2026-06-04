@@ -38,9 +38,9 @@ logging.basicConfig(
 )
 log = logging.getLogger("transcribe")
 
-# ─────────────────────────────────────────────
-# Startup checks — fail fast and loudly
-# ─────────────────────────────────────────────
+
+# Startup checks: fail fast and loudly
+
 def check_startup_requirements():
     """Verify all external dependencies are present before serving requests.
     Logs clearly and exits if anything critical is missing."""
@@ -86,9 +86,9 @@ log.info("Piano Transcriber Server starting…")
 log.info("=" * 60)
 check_startup_requirements()
 
-# ─────────────────────────────────────────────
+
 # Load model
-# ─────────────────────────────────────────────
+
 try:
     checkpoint = torch.load(CHECKPOINT_PATH, map_location=DEVICE)
     model = AudioTransformer(n_mels=N_MELS, vocab_size=len(vocab))
@@ -100,16 +100,16 @@ except Exception as e:
     log.error(f"Failed to load model: {e}")
     sys.exit(1)
 
-# ─────────────────────────────────────────────
-# Concurrency control: serialize GPU-bound work
-# ─────────────────────────────────────────────
-# Only one transcription at a time — we have one model on one device, and
-# parallel requests would either deadlock the GPU or produce garbled outputs.
+
+
+
+# Only one transcription at a time: we have one model on one device, and
+# parallel requests would either deadlock the CPU or produce garbled outputs.
 inference_lock = asyncio.Lock()
 
-# ─────────────────────────────────────────────
+
 # Transcription
-# ─────────────────────────────────────────────
+
 @torch.no_grad()
 def transcribe_audio(audio_path):
     """
@@ -173,9 +173,9 @@ def transcribe_audio(audio_path):
     return all_notes
 
 
-# ─────────────────────────────────────────────
+
 # Helper: streamed bounded upload
-# ─────────────────────────────────────────────
+
 async def save_upload_bounded(upload: UploadFile, dest_path: str, max_bytes: int) -> int:
     """
     Stream the upload to disk in chunks, aborting if it exceeds max_bytes.
@@ -202,14 +202,14 @@ async def save_upload_bounded(upload: UploadFile, dest_path: str, max_bytes: int
     return written
 
 
-# ─────────────────────────────────────────────
+
 # API
-# ─────────────────────────────────────────────
+
 app = FastAPI()
 
 @app.get("/health")
 async def health():
-    """Lightweight liveness probe — useful for the app's online indicator."""
+    """Lightweight liveness probe, useful for the app's online indicator."""
     return {"status": "ok", "device": str(DEVICE)}
 
 @app.post("/transcribe")
@@ -227,7 +227,7 @@ async def transcribe(file: UploadFile):
     video_path = audio_path + ".mp4"
 
     try:
-        # ── Size check (streaming, bounded) ─────────────────────────────────
+        # Size check (streaming, bounded)
         try:
             written = await save_upload_bounded(file, audio_path, MAX_UPLOAD_BYTES)
         except HTTPException:
@@ -241,7 +241,7 @@ async def transcribe(file: UploadFile):
         if written < 1024:
             return JSONResponse({"error": "Audio file too small"}, status_code=400)
 
-        # ── Duration check ──────────────────────────────────────────────────
+        # Duration check
         duration = get_audio_duration(audio_path)
         log.info(f"[{req_id}] Probed duration: {duration:.2f}s")
         if duration > MAX_AUDIO_SECONDS:
@@ -253,7 +253,7 @@ async def transcribe(file: UploadFile):
         if duration > 0:
             log.info(f"[{req_id}] Duration: {duration:.2f}s")
 
-        # ── Inference + video (serialized — one GPU) ────────────────────────
+        # Inference + video (serialized: one CPU)
         async with inference_lock:
             log.info(f"[{req_id}] Acquired inference lock, starting transcription")
 

@@ -16,9 +16,9 @@ from config import (
 log = logging.getLogger("transcribe")
 
 
-# ─────────────────────────────────────────────
+
 # Piano keyboard layout
-# ─────────────────────────────────────────────
+
 def build_key_layout(frame_w, keyboard_h):
     white_w = frame_w / NUM_WHITE_KEYS
     black_w = white_w * 0.58
@@ -43,9 +43,9 @@ def build_key_layout(frame_w, keyboard_h):
     return layout, white_w
 
 
-# ─────────────────────────────────────────────
+
 # Ghost note filter
-# ─────────────────────────────────────────────
+
 def remove_octave_ghosts(notes, time_tol=0.05, vel_diff_min=8, min_duration=0.040):
     to_remove = set()
     n = len(notes)
@@ -74,9 +74,9 @@ def remove_octave_ghosts(notes, time_tol=0.05, vel_diff_min=8, min_duration=0.04
     return [note for note in after_pass1 if (note.end - note.start) >= min_duration]
 
 
-# ─────────────────────────────────────────────
+
 # Frame renderer
-# ─────────────────────────────────────────────
+
 def velocity_alpha(velocity, min_a=0.55, max_a=1.0):
     return min_a + (max_a - min_a) * (velocity / 127.0)
 
@@ -144,9 +144,9 @@ def render_frame(frame, notes, current_time, layout, frame_w, frame_h, keyboard_
         cv2.line(frame,      (x1, hit_y), (x2, hit_y), (80, 80, 80), 1)
 
 
-# ─────────────────────────────────────────────
+
 # Full video generator
-# ─────────────────────────────────────────────
+
 def generate_video(pm_notes, midi_path, output_path):
     """
     pm_notes : list of pretty_midi.Note objects (from pretty_midi, not raw tuples)
@@ -155,13 +155,13 @@ def generate_video(pm_notes, midi_path, output_path):
     Returns: path to the final video with audio, H.264 encoded for Android
     """
 
-    # ── Step 0: filter ghosts, exactly as in piano_roll_video.py ─────────────
+    # Step 0: filter ghosts
     pm_notes.sort(key=lambda n: n.start)
     pm_notes = remove_octave_ghosts(pm_notes)
     if not pm_notes:
         raise ValueError("No notes to render after filtering")
 
-    # ── Step 1: render frames ─────────────────────────────────────────────────
+    # Step 1: render frames 
     t_start      = -LEAD_IN
     t_end        = max(n.end for n in pm_notes) + LEAD_OUT
     duration     = t_end - t_start
@@ -183,7 +183,7 @@ def generate_video(pm_notes, midi_path, output_path):
     writer.release()
     log.info(f"[video] {total_frames} frames rendered")
 
-    # ── Step 2: synthesize audio with fluidsynth ─────────────────────────────
+    # Step 2: synthesize audio with fluidsynth 
     synth_wav  = output_path.replace(".mp4", "_synth.wav")
     padded_wav = output_path.replace(".mp4", "_padded.wav")
     final_path = output_path
@@ -234,7 +234,7 @@ def generate_video(pm_notes, midi_path, output_path):
     log.info(f"[sync] video={video_dur:.3f}s audio={audio_dur:.3f}s "
              f"lead_in={LEAD_IN}s first_note={first_note_t:.3f}s")
 
-    # ── Step 3: prepend LEAD_IN seconds of silence ────────────────────────────
+    # Step 3: prepend LEAD_IN seconds of silence 
     padding_failed = False
     try:
         r2 = subprocess.run([
@@ -258,7 +258,7 @@ def generate_video(pm_notes, midi_path, output_path):
         log.warning(f"[video] Falling back to unpadded audio, expect {LEAD_IN}s desync")
         padded_wav = synth_wav
 
-    # ── Step 4: mux video + audio, re-encode to H.264 for Android ────────────
+    # Step 4: mux video + audio, re-encode to H.264 for Android 
     try:
         r3 = subprocess.run([
             "ffmpeg", "-y",

@@ -470,7 +470,7 @@ def compute_mpteval_metrics(gt_midi_path, pred_midi_path, log=None):
         #_log(f"raw dynamics:     {dynamics}")
         #_log(f"raw articulation: {articulation}")
 
-        # timing: ndarray of shape (1, 3) — (melody_ioi, accompaniment_ioi, ?)
+        # timing: ndarray of shape (1, 3), (melody_ioi, accompaniment_ioi, ?)
         t = timing[0]
         melody_ioi        = float(t[0])
         accompaniment_ioi = float(t[1])
@@ -478,7 +478,7 @@ def compute_mpteval_metrics(gt_midi_path, pred_midi_path, log=None):
         # dynamics: single float
         dyn = float(dynamics)
 
-        # articulation: ndarray of shape (2, 4) — two rows for vel threshold 64 and 127
+        # articulation: ndarray of shape (2, 4), two rows for vel threshold 64 and 127
         # (melody_kor, bass_kor, ratio_kor, ?)
         # use row 0 (threshold=64) as the main metric, row 1 (threshold=127) as strict
         a0 = articulation[0]

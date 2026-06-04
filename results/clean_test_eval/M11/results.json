@@ -1,5 +1,5 @@
 {
-  "checkpoint": "/export/clusterdata/mflara/TFG_cluster/experiments/run_20260503_233835/checkpoints/last_checkpoint.pt",
+  "checkpoint": "M11.pt",
   "step": 600000,
   "num_evaluated": 177,
   "num_failed": 0,

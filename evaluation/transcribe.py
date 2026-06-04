@@ -194,7 +194,7 @@ def transcribe_mel(model,
         time_offset += stride_time
 
     all_notes = sorted(all_notes, key=lambda x: x[0])
-    all_notes = deduplicate_notes(all_notes)       # ← add this
+    all_notes = deduplicate_notes(all_notes)       
 
     print(f"Total notes: {len(all_notes)}")
     return all_notes

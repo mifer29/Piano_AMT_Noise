@@ -326,7 +326,7 @@ def main(args):
             except Exception as e:
                 log(f"  WAV synthesis failed: {e}")
                 log(traceback.format_exc())
-                log(f"  You can still convert manually:")
+                log(f"  It can still be converted manually:")
                 log(f"    fluidsynth -ni -F {song_dir}/predicted.wav {args.soundfont} {midi_path}")
         else:
             log("  Skipping WAV synthesis (no --soundfont)")

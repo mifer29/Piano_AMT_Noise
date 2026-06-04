@@ -83,9 +83,9 @@ def train():
         props = torch.cuda.get_device_properties(i)
         log(f"  GPU {i}: {props.name}, VRAM: {props.total_memory / 1e9:.1f}GB")
 
-    # --------------------------------------------------
+    
     # Hyperparameters
-    # --------------------------------------------------
+   
 
     GRAD_CLIP          = 1.0
     LOG_EVERY          = 50
@@ -405,7 +405,7 @@ def train():
             global_step += 1
             current_lr = scheduler.get_last_lr()[0]
 
-            # ---------------- LOGGING ----------------
+            # LOGGING
             if global_step <= 10 or global_step % LOG_EVERY == 0:
 
                 ppl = math.exp(min(loss.item(), 20))  # use original loss
@@ -427,7 +427,7 @@ def train():
 
             t_step_end = time.time()
 
-            # ---------------- VALIDATION ----------------
+            #  VALIDATION
             if global_step % VALIDATE_EVERY == 0:
                 val_loss = evaluate()
                 val_losses.append(val_loss)
@@ -438,7 +438,7 @@ def train():
             if global_step % GREEDY_EVERY == 0:
                 evaluate_greedy()
 
-            # ---------------- CHECKPOINT ----------------
+            # CHECKPOINT
             if global_step % SAVE_EVERY == 0:
                 ckpt_path = os.path.join(CHECKPOINT_DIR, f"checkpoint_step{global_step}.pt")
                 torch.save({

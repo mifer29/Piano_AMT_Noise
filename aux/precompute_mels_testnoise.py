@@ -21,9 +21,8 @@ Output structure (mirrors input):
         noise_20db/  song1.npy  song2.npy...
         ...
 
-Each .npy file is a float16 array of shape (T, n_mels): identical format
-to the mels stored in the training HDF5, so the existing evaluation code
-can load them without modification
+Each .npy file is a float16 array of shape (T, n_mels): identical format to the mels stored in the training HDF5, 
+so the existing evaluation code can load them without modification
 """
 
 import argparse

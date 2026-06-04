@@ -1,8 +1,8 @@
 [17:00:38] AMT EVALUATION
-[17:00:38] Checkpoint:  /export/clusterdata/mflara/TFG_cluster/experiments/run_20260503_233835/checkpoints/last_checkpoint.pt
-[17:00:38] Test HDF5:   /export/clusterdata/mflara/maestro/maestro_test.h5
+[17:00:38] Checkpoint:  M11.pt
+[17:00:38] Test HDF5:   maestro_test.h5
 [17:00:38] MIDI dir:    not provided — using HDF5 events
-[17:00:38] Output dir:  /export/clusterdata/mflara/TFG_cluster/result_model11_test
+[17:00:38] Output dir:  result_model11_test
 [17:00:38] Num samples: 177
 [17:00:38] Device: cuda
 [17:00:38] GPU: NVIDIA GeForce RTX 3090, VRAM: 25.3GB
@@ -14,7 +14,7 @@
 [17:00:38] Vocab size: 1387
 [17:00:38] bos_id=1, eos_id=2, pad_id=0
 [17:00:38] Will evaluate 177 songs
-[17:00:38] Loading checkpoint: /export/clusterdata/mflara/TFG_cluster/experiments/run_20260503_233835/checkpoints/last_checkpoint.pt
+[17:00:38] Loading checkpoint: M11.pt
 [17:00:50] Checkpoint keys: ['step', 'model_state_dict', 'optimizer_state_dict', 'scheduler_state_dict', 'train_losses', 'train_steps', 'val_losses', 'val_steps']
 [17:00:50] Checkpoint step: 600000
 [17:00:50] Creating model
@@ -27528,5 +27528,5 @@
 [14:24:05]   [score]   Onset+Offset+Vel F1: 75.28%
 [14:24:05]   DONE 76.4s | Onset F1: 98.2% | O+Off F1: 75.9% | O+Off+V F1: 75.3%
 [14:24:05] RESULTS  (177 evaluated, 0 failed)
-[14:24:05] Results saved to /export/clusterdata/mflara/TFG_cluster/result_model11_test/results.json
-[14:24:05] Log saved to     /export/clusterdata/mflara/TFG_cluster/result_model11_test/eval.log
+[14:24:05] Results saved to results.json
+[14:24:05] Log saved to     eval.log

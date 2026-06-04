@@ -10,7 +10,7 @@ Madrid, June 2026.
 
 ## Abstract
 
-This thesis presents the development and implementation of an end-to-end Automatic Music Transcription (AMT) system for polyphonic piano recordings captured under noisy conditions, where existing models tend to degrade. The proposed approach is a sequence-to-sequence Transformer with a convolutional front-end for feature extraction, which maps mel-spectrogram inputs to a token vocabulary encoding note onsets, offsets, and velocities. To address the gap between clean audio and realistic recording conditions, the model is trained to be robust to acoustic degradation through an augmentation pipeline that simulates mobile recording conditions, including room reverberation, environmental noise from the MUSAN dataset, and signal-processing effects. 
+This thesis presents the development and implementation of a noise-robust end-to-end Automatic Music Transcription (AMT) system for polyphonic piano audio, targeting acoustic conditions where existing models tend to degrade. The proposed approach is a sequence-to-sequence Transformer with a convolutional front-end for feature extraction, which maps mel-spectrogram inputs to a token vocabulary encoding note onsets, offsets, and velocities. To address the gap between clean audio and realistic recording conditions, the model is trained to be robust to acoustic degradation through an augmentation pipeline that simulates mobile recording conditions, including room reverberation, environmental noise from the MUSAN dataset, and signal-processing effects. 
 
 The system is trained on the MAESTRO dataset and evaluated on clean audio and a range of acoustic degradation conditions: varying levels of background and speech noise, reverberant environments, and simulated phone recordings. The noise-robust model substantially improves transcription quality under the degraded conditions compared to the same model trained without augmentation, while preserving transcription quality on clean audio.
     
@@ -169,13 +169,12 @@ high-pass, MUSAN background/speech mixing (SNR 15–35 dB), and AAC codec compre
 
 ## Documentation
 
-Install steps, commands, and the file tree live in [`docs/`](docs/) to keep this README focused
-on the research:
+Install steps, commands, and the file tree live in [`docs/`](docs/) to keep this README focused on the research:
 
 - **[Setup](docs/SETUP.md)**: Requirements, virtual environment, system binaries, and `.env`.
 - **[Usage](docs/USAGE.md)**: Data preparation, training (with the HPC / hardware notes),
   evaluation, single-file transcription, the inference server, and the Android app.
-- **[Repository layout](docs/STRUCTURE.md)**: Annotated file tree.
+- **[Repository layout](docs/STRUCTURE.md)**: File tree with the project structure.
 
 ---
 

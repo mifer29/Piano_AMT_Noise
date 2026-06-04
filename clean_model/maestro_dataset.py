@@ -163,9 +163,9 @@ class MAESTROSeq2SeqDataset(Dataset):
         Applied after mel loading, before returning the sample.
 
         Order matters:
-        1. SpecAugment first  — operates on clean mel
-        2. Reverb             — smears energy (room simulation)
-        3. Noise              — adds on top of reverbed signal
+        1. SpecAugment first: operates on clean mel
+        2. Reverb: smears energy (room simulation)
+        3. Noise: adds on top of reverbed signal
 
         Pitch shift removed: rolling mel bins doesn't shift pitch correctly
         on a log-scale mel spectrogram and doesn't shift tokens, so it was
