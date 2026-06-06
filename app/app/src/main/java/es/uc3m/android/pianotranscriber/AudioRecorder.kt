@@ -9,13 +9,9 @@ import java.io.IOException
 
 /**
  * Thin wrapper around [MediaRecorder] for capturing audio to a file.
- *
- * Usage:
- *   val recorder = AudioRecorder(context, file)
- *   val ok = recorder.start()
- *   // … later …
- *   val seconds = recorder.stop()
+
  */
+
 class AudioRecorder(
     private val context: Context,
     private val outputFile: File
@@ -24,12 +20,12 @@ class AudioRecorder(
     private var isRecording = false
     private var startTimeMs: Long = 0L
 
-    // ── Public API ────────────────────────────────────────────────────────────
+    // Public API
 
     /**
      * Starts recording.
      * @return true if recording started successfully, false otherwise.
-     *         Callers should not flip UI state to "recording" unless this returns true.
+     * Callers should not flip UI state to "recording" unless this returns true.
      */
     fun start(): Boolean {
         if (isRecording) return true
@@ -158,7 +154,7 @@ class AudioRecorder(
 
     fun outputPath(): String = outputFile.absolutePath
 
-    // ── Private helpers ───────────────────────────────────────────────────────
+    // Private helpers
 
     private fun safeReleaseRecorder() {
         try {

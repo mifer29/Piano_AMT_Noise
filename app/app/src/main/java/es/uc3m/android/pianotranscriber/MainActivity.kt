@@ -86,7 +86,7 @@ import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.*
 
-// ── Colour tokens ─────────────────────────────────────────────────────────────
+// Colour tokens
 private val BG_DEEP    = ComposeColor(0xFF0F0F0F)
 private val BG_CARD    = ComposeColor(0xFF1A1A1A)
 private val BG_CHIP    = ComposeColor(0xFF252525)
@@ -100,10 +100,10 @@ private val TXT_SEC    = ComposeColor(0xFF888888)
 private val TXT_HINT   = ComposeColor(0xFF444444)
 private val DIVIDER    = ComposeColor(0xFF2A2A2A)
 
-// ── Minimum valid audio file size in bytes
+// Minimum valid audio file size in bytes
 private const val MIN_AUDIO_BYTES = 1024L
 
-// ── DataStore for persisting the server URL ──────────────────────────────────
+// DataStore for persisting the server URL
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 private val SERVER_URL_KEY = stringPreferencesKey("server_url")
 
@@ -119,7 +119,7 @@ object Settings {
     }
 }
 
-// ── Data model ────────────────────────────────────────────────────────────────
+// Data model
 data class Recording(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
@@ -132,7 +132,7 @@ data class Recording(
 enum class RecordingStatus { READY, PROCESSING, DONE, ERROR }
 data class NoteEvent(val pitch: Int, val startBeat: Float, val durationBeats: Float)
 
-// ── Server result ─────────────────────────────────────────────────────────────
+// Server result
 data class TranscriptionResult(
     val name: String,
     val midiFile: File,
@@ -140,7 +140,7 @@ data class TranscriptionResult(
     val bpm: Int
 )
 
-// ── App state ─────────────────────────────────────────────────────────────────
+// App state
 sealed class Screen {
     object Record       : Screen()
     object Processing   : Screen()
@@ -151,7 +151,7 @@ sealed class Screen {
 data class ProcessingStep(val label: String, val state: StepState)
 enum class StepState { DONE, ACTIVE, PENDING }
 
-// ── Main Activity ─────────────────────────────────────────────────────────────
+// Main Activity
 class MainActivity : ComponentActivity() {
 
     private var recorder: AudioRecorder? = null
@@ -477,7 +477,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // ── Save MIDI ─────────────────────────────────────────────────────────────
+    // Save MIDI
     private fun saveMidiToDownloads(midiFile: File) {
         if (!midiFile.exists()) {
             Toast.makeText(this, "MIDI file not found", Toast.LENGTH_SHORT).show()
@@ -525,7 +525,7 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) { Toast.makeText(this, "Save failed: ${e.message}", Toast.LENGTH_LONG).show() }
     }
 
-    // ── Save Video ────────────────────────────────────────────────────────────
+    // Save Video
     private fun saveVideoToDownloads(videoFile: File) {
         if (!videoFile.exists()) {
             Toast.makeText(this, "Video file not found", Toast.LENGTH_SHORT).show()
@@ -574,7 +574,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
+// Theme
 @Composable
 fun PianoTranscriberTheme(content: @Composable () -> Unit) {
     MaterialTheme(
@@ -586,7 +586,7 @@ fun PianoTranscriberTheme(content: @Composable () -> Unit) {
     )
 }
 
-// ── Main screen ───────────────────────────────────────────────────────────────
+// Main screen
 @Composable
 fun MainScreen(
     onStartRecording: (File) -> Boolean,
@@ -610,7 +610,7 @@ fun MainScreen(
     var currentRecFile  by remember { mutableStateOf<File?>(null) }
     var showSettings    by remember { mutableStateOf(false) }
 
-    // ── Lifecycle hook: stop recording when app goes to background ───────────
+    // Lifecycle hook: stop recording when app goes to background
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -666,13 +666,17 @@ fun MainScreen(
                 currentFile = null
                 // Only jump to the result if the user is still waiting on the
                 // Processing screen. If they navigated away while the upload kept
-                // running in the background, don't yank them — the finished
+                // running in the background, don't yank them, the finished
                 // transcription is available in the Results tab.
                 if (screen == Screen.Processing) {
                     screen = Screen.ResultDetail
                 } else {
                     Toast.makeText(context, "Transcription ready — see Results", Toast.LENGTH_SHORT).show()
                 }
+                // Reset the Processing screen back to its idle state so it
+                // doesn't stay stuck on the green "complete" view next time
+                // the user opens the Processing tab.
+                processingSteps = initialSteps()
             },
             { err ->
                 Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
@@ -792,7 +796,7 @@ fun initialSteps() = listOf(
     ProcessingStep("Preparing results", StepState.PENDING),
 )
 
-// ── Settings dialog ───────────────────────────────────────────────────────────
+// Settings dialog
 @Composable
 fun ServerSettingsDialog(onDismiss: () -> Unit, onSaved: () -> Unit) {
     val context = LocalContext.current
@@ -899,7 +903,7 @@ fun ServerSettingsDialog(onDismiss: () -> Unit, onSaved: () -> Unit) {
     }
 }
 
-// ── Nav tabs ──────────────────────────────────────────────────────────────────
+// Nav tabs
 @Composable
 fun NavTabs(current: Screen, onSelect: (Screen) -> Unit) {
     val tabs = listOf("Record" to Screen.Record, "Processing" to Screen.Processing, "Results" to Screen.ResultList)
@@ -921,7 +925,7 @@ fun NavTabs(current: Screen, onSelect: (Screen) -> Unit) {
     }
 }
 
-// ── Record screen ─────────────────────────────────────────────────────────────
+// Record screen
 @Composable
 fun RecordScreen(
     isRecording: Boolean, recordingSeconds: Int, recordings: List<Recording>,
@@ -1041,7 +1045,7 @@ fun StatusChip(status: RecordingStatus) {
         modifier = Modifier.background(bg, RoundedCornerShape(20.dp)).padding(horizontal = 8.dp, vertical = 3.dp))
 }
 
-// ── Processing screen ─────────────────────────────────────────────────────────
+// Processing screen
 @Composable
 fun ProcessingScreen(steps: List<ProcessingStep>, fileName: String, isDone: Boolean) {
     val isProcessing = steps.any { it.state == StepState.ACTIVE }
@@ -1094,7 +1098,7 @@ fun ProcessingStepRow(step: ProcessingStep) {
     }
 }
 
-// ── Result list screen ────────────────────────────────────────────────────────
+// Result list screen
 @Composable
 fun ResultListScreen(
     results: List<TranscriptionResult>, onSelect: (TranscriptionResult) -> Unit,
@@ -1184,7 +1188,7 @@ fun ResultListItem(result: TranscriptionResult, onSelect: () -> Unit, onRename: 
     }
 }
 
-// ── Result detail screen ──────────────────────────────────────────────────────
+// Result detail screen
 @Composable
 fun ResultScreen(
     result: TranscriptionResult?,
@@ -1199,6 +1203,7 @@ fun ResultScreen(
     val context = LocalContext.current
     var isPlaying by remember { mutableStateOf(false) }
     var videoError by remember { mutableStateOf(false) }
+    var isPrepared by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = Modifier.fillMaxSize().background(BG_DEEP).padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(vertical = 20.dp)
@@ -1236,7 +1241,18 @@ fun ResultScreen(
                                     setOnPreparedListener { mp ->
                                         try {
                                             mp.isLooping = true
+                                            // Pre-warm the decoder so the first real
+                                            // play is smooth: briefly start muted,
+                                            // pause, and seek back to frame 0. This
+                                            // forces MediaCodec to initialise and
+                                            // decode the first frames now, instead of
+                                            // stalling on the user's first Play tap.
+                                            mp.setVolume(0f, 0f)
+                                            mp.start()
+                                            mp.pause()
                                             mp.seekTo(0)
+                                            mp.setVolume(1f, 1f)
+                                            isPrepared = true
                                             if (isPlaying) mp.start()
                                         } catch (e: Exception) {
                                             Log.e("VideoView", "onPrepared error", e)
@@ -1251,7 +1267,9 @@ fun ResultScreen(
                         },
                         update = { videoView ->
                             try {
-                                if (isPlaying) videoView.start() else videoView.pause()
+                                if (isPrepared) {
+                                    if (isPlaying) videoView.start() else videoView.pause()
+                                }
                             } catch (e: Exception) {
                                 Log.e("VideoView", "Playback toggle failed", e)
                                 videoError = true
@@ -1343,7 +1361,7 @@ fun StatBox(label: String, value: String, modifier: Modifier = Modifier) {
     }
 }
 
-// ── Piano roll Canvas (kept for reference / offline use) ──────────────────────
+// Piano roll Canvas (kept for reference / offline use)
 @Composable
 fun PianoRollCanvas(notes: List<NoteEvent>, modifier: Modifier = Modifier) {
     val accentArgb = ACCENT.toArgb()

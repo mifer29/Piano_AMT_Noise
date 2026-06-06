@@ -37,7 +37,7 @@ def tokens_to_notes(token_ids, time_resolution=0.01, segment_duration=None):
         attack:  time -> note_on -> velocity
         release: time -> note_off
 
-    Because velocity tokens always *follow* the note_on they apply to, this
+    Because velocity tokens always follow the note_on they apply to, this
     function peeks ahead one position after each note_on rather than
     maintaining a running 'current velocity' state. The previous
     running-state implementation produced off-by-one velocities (each note
