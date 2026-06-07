@@ -173,7 +173,8 @@ Install steps, commands, and the file tree live in [`docs/`](docs/) to keep this
 
 - **[Setup](docs/SETUP.md)**: Requirements, virtual environment, system binaries, and `.env`.
 - **[Usage](docs/USAGE.md)**: Data preparation, training (with the HPC / hardware notes),
-  evaluation, single-file transcription, the inference server, and the Android app.
+  evaluation, and single-file transcription.
+- **[Deployment](docs/DEPLOYMENT.md)**: The deployment instructions with the inference server and the Android app.
 - **[Repository layout](docs/STRUCTURE.md)**: File tree with the project structure.
 
 ---

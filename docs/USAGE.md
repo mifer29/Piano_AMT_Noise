@@ -1,6 +1,6 @@
 # Usage
 
-[← Back to README](../README.md) · See also [SETUP.md](SETUP.md) and [STRUCTURE.md](STRUCTURE.md).
+[← Back to README](../README.md) · See also [SETUP.md](SETUP.md), [DEPLOYMENT.md](DEPLOYMENT.md) and [STRUCTURE.md](STRUCTURE.md).
 
 ## 1. Data preparation
 
@@ -78,19 +78,8 @@ under [results/](../results/).
 python evaluation/transcribe.py  input.wav  output.mid
 ```
 
-## 5. Inference server
+## 5. Inference server & Android app
 
-```bash
-cd server
-uvicorn server:app --host 0.0.0.0 --port 8000
-```
+To run the FastAPI inference server and build or install the Android app, see
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
-The server runs startup checks (binaries, checkpoint, soundfont), then accepts audio
-uploads (≤ 300 MB, ≤ 300 s), runs overlap-skip windowed inference, and returns MIDI plus an
-optional piano-roll video. Designed to run on a laptop CPU.
-
-## 6. Android app
-
-Open [app/](../app/) in Android Studio and build the
-`es.uc3m.android.pianotranscriber` module. The app records or selects audio, uploads it to
-the backend, and renders the returned transcription as a piano roll.
