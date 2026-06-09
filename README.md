@@ -7,20 +7,6 @@ Tutor: Dr. Víctor P. Gil Jiménez.<br>
 Madrid, June 2026.
 
 ---
-
-## Abstract
-
-This thesis presents the development and implementation of a noise-robust end-to-end Automatic Music Transcription (AMT) system for polyphonic piano audio, targeting acoustic conditions where existing models tend to degrade. The proposed approach is a sequence-to-sequence Transformer with a convolutional front-end for feature extraction, which maps mel-spectrogram inputs to a token vocabulary encoding note onsets, offsets, and velocities. To address the gap between clean audio and realistic recording conditions, the model is trained to be robust to acoustic degradation through an augmentation pipeline that simulates mobile recording conditions, including room reverberation, environmental noise from the MUSAN dataset, and signal-processing effects. 
-
-The system is trained on the MAESTRO dataset and evaluated on clean audio and a range of acoustic degradation conditions: varying levels of background and speech noise, reverberant environments, and simulated phone recordings. The noise-robust model substantially improves transcription quality under the degraded conditions compared to the same model trained without augmentation, while preserving transcription quality on clean audio.
-    
-Furthermore, the work includes the deployment of a client-server mobile application that allows users to record a piano performance from their phone and automatically receive a MIDI transcription and a Synthesia-style piano-roll video. Together, the augmentation methodology, the sequence-to-sequence token formulation, and the deployment of the mobile system demonstrate that piano AMT models can be made robust to realistic acoustic degradation while remaining practical for end-user deployment.
-
-**Keywords:** Automatic Music Transcription · Polyphonic Piano Transcription · Noise
-Robustness · Deep Learning · Transformers · Convolutional Neural Networks · Sequence-to-Sequence Models · Data Augmentation · MAESTRO · MUSAN · Mobile Application
-
----
-
 ## Overview
 
 This repository contains the code and results of the piano AMT system proposed in the thesis, which transcribes polyphonic piano audio into MIDI using a sequence-to-sequence Transformer with a convolutional front-end. 
