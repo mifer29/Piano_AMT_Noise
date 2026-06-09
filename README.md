@@ -14,7 +14,7 @@ This thesis presents the development and implementation of a noise-robust end-to
 
 The system is trained on the MAESTRO dataset and evaluated on clean audio and a range of acoustic degradation conditions: varying levels of background and speech noise, reverberant environments, and simulated phone recordings. The noise-robust model substantially improves transcription quality under the degraded conditions compared to the same model trained without augmentation, while preserving transcription quality on clean audio.
     
-Furthermore, the work includes the deployment of a client-server mobile application that allows users to record a piano performance from their phone and automatically receive a MIDI transcription and a Synthesia-style piano roll video. Together, the augmentation methodology, the sequence-to-sequence token formulation, and the deployment of the mobile system demonstrate that piano AMT models can be made robust to realistic acoustic degradation while remaining practical for end-user deployment.
+Furthermore, the work includes the deployment of a client-server mobile application that allows users to record a piano performance from their phone and automatically receive a MIDI transcription and a Synthesia-style piano-roll video. Together, the augmentation methodology, the sequence-to-sequence token formulation, and the deployment of the mobile system demonstrate that piano AMT models can be made robust to realistic acoustic degradation while remaining practical for end-user deployment.
 
 **Keywords:** Automatic Music Transcription · Polyphonic Piano Transcription · Noise
 Robustness · Deep Learning · Transformers · Convolutional Neural Networks · Sequence-to-Sequence Models · Data Augmentation · MAESTRO · MUSAN · Mobile Application
@@ -25,7 +25,7 @@ Robustness · Deep Learning · Transformers · Convolutional Neural Networks · 
 
 This repository contains the code and results of the piano AMT system proposed in the thesis, which transcribes polyphonic piano audio into MIDI using a sequence-to-sequence Transformer with a convolutional front-end. 
 
-The main research contribution is **demonstrated robustness under simulated acoustic degradation**. The model is trained on MAESTRO with on-the-fly noise augmentation (drawn from the MUSAN corpus and simulated room/phone effects) and is evaluated across multiple controlled acoustic conditions. A FastAPI backend and an Android app (Jetpack Compose) wrap the trained model into a usable end-to-end transcription tool.
+The main research contribution is **robustness under simulated acoustic degradation**. The model is trained on MAESTRO with on-the-fly noise augmentation (drawn from the MUSAN corpus and simulated room/phone effects) and is evaluated across multiple controlled acoustic conditions. A FastAPI backend and an Android app (Jetpack Compose) wrap the trained model into a usable end-to-end transcription tool.
 
 > **Headline result.** Averaged across the eight degraded test conditions, noise-augmented
 > training (M11) raises onset F1 from **76.4 % to 87.4 %** over the same architecture trained on
@@ -50,6 +50,8 @@ The trained checkpoints for these three variants (M1, M9, M11) are available on 
 ---
 
 ## Noisy Test Set Results
+
+### Onset
 
 Onset **F1 (%)** on the held-out MAESTRO test set, across the evaluation conditions
 (full metrics: onset/offset/velocity, plus `mpteval` in [results/](results/)):
@@ -103,7 +105,7 @@ Onset + offset + velocity **F1 (%)** (the strictest metric: onset, offset, *and*
 | `phone_simulation` | 24.5 | 40.7 | **53.4** |
 
 The offset and velocity metrics track the onset trend: M11 wins everywhere except the
-in-distribution `reverb_small`, but the absolute scores are lower across the board, since
+`reverb_small`, but the absolute scores are lower across the board, since
 offsets blur under degradation faster than onsets do (the failure mode noted in
 [Limitations](#limitations)). The largest noise-augmentation gains again land on speech and
 severe noise: `speech_15db` (+41.8 offset, +43.4 offset+vel over M1) and `noise_5db`
