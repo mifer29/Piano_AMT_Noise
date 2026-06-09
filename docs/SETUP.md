@@ -16,8 +16,6 @@
 
 ```bash
 # From the repository root, with Python 3.10+.
-# The pinned versions require Python >= 3.10; the system Python 3.9 will fail with "No matching distribution".
-# Note: the library 'pretty_midi' works with Python <= 3.12
 python3.11 -m venv .venv
 
 # Activate it
