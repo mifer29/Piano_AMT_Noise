@@ -11,7 +11,7 @@ Madrid, June 2026.
 
 This repository contains the code and results of the piano AMT system proposed in the thesis, which transcribes polyphonic piano audio into MIDI using a sequence-to-sequence Transformer with a convolutional front-end. 
 
-The main research contribution is **robustness under simulated acoustic degradation**. The model is trained on MAESTRO with on-the-fly noise augmentation (drawn from the MUSAN corpus and simulated room/phone effects) and is evaluated across multiple controlled acoustic conditions. A FastAPI backend and an Android app (Jetpack Compose) wrap the trained model into a usable end-to-end transcription tool.
+The main research contribution is **robustness under simulated acoustic degradation**. The model is trained on MAESTRO with on-the-fly noise augmentation (drawn from the MUSAN corpus and simulated room/phone effects) and is evaluated across multiple controlled acoustic conditions. A FastAPI backend and an Android app (Jetpack Compose) wrap the trained model into a usable end-to-end transcription tool: see the **[video demo](https://youtu.be/ktp03vLiYmM)** ([details](#mobile-app)).
 
 > **Headline result.** Averaged across the eight degraded test conditions, noise-augmented
 > training (M11) raises onset F1 from **76.4 % to 87.4 %** over the same architecture trained on
@@ -152,6 +152,18 @@ Built deterministically (seed 42) in [aux/build_testnoise.py](aux/build_testnois
 Training augmentation includes room reverb (pyroomacoustics), a 100 Hz Butterworth
 high-pass, MUSAN background/speech mixing (SNR 15–35 dB), and AAC codec compression. Robustness claims are scoped to
 *simulated acoustic degradation*, not real-world phone recordings.
+
+---
+
+## Mobile app
+
+The system is usable end-to-end: a FastAPI backend ([server/](server/)) runs the model with
+the same overlap-skip inference pipeline used in evaluation, and an Android app
+([app/](app/), Kotlin / Jetpack Compose) records or selects audio, uploads it to the
+backend, and renders the returned transcription as a piano roll. A prebuilt APK is included
+([pianotranscriber.apk](pianotranscriber.apk)); build and install instructions are in
+[Deployment](docs/DEPLOYMENT.md). A **[video demo](https://youtu.be/ktp03vLiYmM)** shows the full
+record → upload → transcription flow.
 
 ---
 
